@@ -1,6 +1,7 @@
-# Wkhtml
+<<<<<<< HEAD
+# WkHtml
 
-TODO: Write a gem description
+Ruby bindings for wkhtmltox (wkhtmltopdf)
 
 ## Installation
 
