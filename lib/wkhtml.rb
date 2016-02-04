@@ -1,5 +1,6 @@
-require "wkhtml/version"
+require 'wkhtml.bundle'
+require 'wkhtml/version'
 
-module Wkhtml
+module WkHtml
   # Your code goes here...
 end

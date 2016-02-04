@@ -121,7 +121,4 @@ unless have_header('wkhtmltox/image.h')
   warn('Missing image.h')
 end
 
-
-#dir_config('wkhtml')
 create_makefile('wkhtml')
-
