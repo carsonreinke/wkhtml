@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # WkHtml
 
 Ruby bindings for wkhtmltox (wkhtmltopdf)
