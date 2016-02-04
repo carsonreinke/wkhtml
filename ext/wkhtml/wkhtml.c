@@ -64,14 +64,14 @@ VALUE wkhtml_topdf_globalsettings_alloc(VALUE self) {
   Data_Get_Struct(self, setting_type, settings); \
   \
   char* key_cstr = StringValueCStr(key); \
-  char* val_cstr = malloc(sizeof(char) * BUFFER_SIZE); \
+  char* val_cstr = ALLOC_N(char, BUFFER_SIZE); \
   VALUE val = Qnil; \
   int result = setting_func(settings, key_cstr, val_cstr, BUFFER_SIZE); \
   \
   if(result) { \
     val = rb_str_new_cstr(val_cstr); \
   } \
-  free(val_cstr); \
+  xfree(val_cstr); \
   \
   if(val == Qnil) { \
     rb_raise(rb_eArgError, "unknown setting: %s", key_cstr); \
