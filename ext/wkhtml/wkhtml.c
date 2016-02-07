@@ -16,28 +16,29 @@ void Init_wkhtml() {
   //Genesis
   wkhtmltopdf_init(use_graphics); //wkhtmltopdf_deinit will not be called ever
   wkhtmltoimage_init(use_graphics); //Duplicate, but could change in future
-    
+
   mWkHtml = rb_define_module("WkHtml");
   rb_define_const(mWkHtml, "LIBRARY_VERSION", rb_obj_freeze(rb_str_new_cstr(wkhtmltopdf_version())));
-  
+
   mWkHtmlToPdf = rb_define_module_under(mWkHtml, "ToPdf");
-  
+
   cWkHtmlToPdfGlobalSettings = rb_define_class_under(mWkHtmlToPdf, "GlobalSettings", rb_cObject);
   rb_define_alloc_func(cWkHtmlToPdfGlobalSettings, wkhtml_topdf_globalsettings_alloc);
   rb_define_method(cWkHtmlToPdfGlobalSettings, "[]=", wkhtml_topdf_globalsettings_aset, 2);
   rb_define_method(cWkHtmlToPdfGlobalSettings, "[]", wkhtml_topdf_globalsettings_aref, 1);
-  
-  cWkHtmlToPdfConverter = rb_define_class_under(mWkHtmlToPdf, "Converter", rb_cObject);
-  rb_define_singleton_method(cWkHtmlToPdfConverter, "create", wkhtml_topdf_converter_create, 1);
-  rb_undef_alloc_func(cWkHtmlToPdfConverter); //Have to use the factory method
-  
-  mWkHtmlToImage = rb_define_module_under(mWkHtml, "ToImage");
-}
 
-VALUE wkhtml_topdf_globalsettings_alloc(VALUE self) {
-  wkhtmltopdf_global_settings* settings = wkhtmltopdf_create_global_settings();
-  
-  return Data_Wrap_Struct(self, NULL, wkhtmltopdf_destroy_global_settings, settings);
+  cWkHtmlToPdfObjectSettings = rb_define_class_under(mWkHtmlToPdf, "ObjectSettings", rb_cObject);
+  rb_define_alloc_func(cWkHtmlToPdfObjectSettings, wkhtml_topdf_objectsettings_alloc);
+  rb_define_method(cWkHtmlToPdfObjectSettings, "[]=", wkhtml_topdf_objectsettings_aset, 2);
+  rb_define_method(cWkHtmlToPdfObjectSettings, "[]", wkhtml_topdf_objectsettings_aref, 1);
+
+  cWkHtmlToPdfConverter = rb_define_class_under(mWkHtmlToPdf, "Converter", rb_cObject);
+  rb_undef_alloc_func(cWkHtmlToPdfConverter); //Have to use the factory method
+  rb_define_singleton_method(cWkHtmlToPdfConverter, "create", wkhtml_topdf_converter_create, 1);
+  rb_define_method(cWkHtmlToPdfConverter, "add_object", wkhtml_topdf_converter_add_object, 2);
+  rb_define_method(cWkHtmlToPdfConverter, "convert", wkhtml_topdf_converter_convert, 0);
+
+  mWkHtmlToImage = rb_define_module_under(mWkHtml, "ToImage");
 }
 
 #define wkhtml_setting_aset(setting_type, setting_func) ({ \
@@ -80,21 +81,73 @@ VALUE wkhtml_topdf_globalsettings_alloc(VALUE self) {
   return val; \
 }) //#TODO force UTF-8
 
+//WkHtml::ToPdf::GlobalSettings
+VALUE wkhtml_topdf_globalsettings_alloc(VALUE self) {
+  wkhtmltopdf_global_settings* settings = wkhtmltopdf_create_global_settings();
+  return Data_Wrap_Struct(self, NULL, wkhtmltopdf_destroy_global_settings, settings);
+}
 VALUE wkhtml_topdf_globalsettings_aset(VALUE self, VALUE key, VALUE val) {
   wkhtml_setting_aset(wkhtmltopdf_global_settings, wkhtmltopdf_set_global_setting);
 }
-
 VALUE wkhtml_topdf_globalsettings_aref(VALUE self, VALUE key) {
   wkhtml_setting_aref(wkhtmltopdf_global_settings, wkhtmltopdf_get_global_setting);
 }
 
+//WkHtml::ToPdf::ObjectSettings
+VALUE wkhtml_topdf_objectsettings_alloc(VALUE self) {
+  wkhtmltopdf_object_settings* settings = wkhtmltopdf_create_object_settings();
+  return Data_Wrap_Struct(self, NULL, wkhtmltopdf_destroy_object_settings, settings);
+}
+VALUE wkhtml_topdf_objectsettings_aset(VALUE self, VALUE key, VALUE val) {
+  wkhtml_setting_aset(wkhtmltopdf_object_settings, wkhtmltopdf_set_object_setting);
+}
+VALUE wkhtml_topdf_objectsettings_aref(VALUE self, VALUE key) {
+  wkhtml_setting_aref(wkhtmltopdf_object_settings, wkhtmltopdf_get_object_setting);
+}
+
+//WkHtml::ToPdf::Converter
 VALUE wkhtml_topdf_converter_create(VALUE self, VALUE settings) {
   wkhtmltopdf_global_settings* global_settings;
   wkhtmltopdf_converter* converter;
+  
+  if(rb_obj_is_kind_of(settings, cWkHtmlToPdfGlobalSettings) == Qfalse) {
+    rb_raise(rb_eArgError, "Wrong argument type, must be a GlobalSettings");
+  }
   
   Data_Get_Struct(settings, wkhtmltopdf_global_settings, global_settings);
   
   converter = wkhtmltopdf_create_converter(global_settings);
   
   return Data_Wrap_Struct(self, NULL, wkhtmltopdf_destroy_converter, converter);
+}
+
+VALUE wkhtml_topdf_converter_add_object(VALUE self, VALUE settings, VALUE data) {
+  wkhtmltopdf_converter* converter;
+  wkhtmltopdf_object_settings* object_settings;
+  char* data_cstr = NULL;
+  
+  if(rb_obj_is_kind_of(settings, cWkHtmlToPdfObjectSettings) == Qfalse) {
+    rb_raise(rb_eArgError, "Wrong argument type, must be a ObjectSettings");
+  }
+  
+  if(!NIL_P(data)) {
+    Check_Type(data, T_STRING);
+    data_cstr = StringValueCStr(data);
+  }
+  
+  Data_Get_Struct(settings, wkhtmltopdf_object_settings, object_settings);
+  Data_Get_Struct(self, wkhtmltopdf_converter, converter);
+  
+  //TODO Once the object has been added, the supplied settings may no longer be accessed, it Wit eventually be freed by wkhtmltopdf.
+  wkhtmltopdf_add_object(converter, object_settings, data_cstr);
+  
+  return data;
+}
+
+VALUE wkhtml_topdf_converter_convert(VALUE self) {
+  wkhtmltopdf_converter* converter;
+  
+  Data_Get_Struct(self, wkhtmltopdf_converter, converter);
+  
+  return INT2BOOL(wkhtmltopdf_convert(converter));
 }
