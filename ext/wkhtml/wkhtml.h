@@ -2,6 +2,7 @@
 #include <wkhtmltox/pdf.h>
 #include <wkhtmltox/image.h>
 
+static ID idReady;
 static VALUE mWkHtml = Qnil;
 static VALUE mWkHtmlToPdf = Qnil;
 static VALUE cWkHtmlToPdfGlobalSettings = Qnil;
@@ -27,5 +28,7 @@ VALUE wkhtml_topdf_objectsettings_aref(VALUE self, VALUE key);
 VALUE wkhtml_topdf_converter_create(VALUE self, VALUE settings);
 VALUE wkhtml_topdf_converter_add_object(VALUE self, VALUE settings, VALUE data);
 VALUE wkhtml_topdf_converter_convert(VALUE self);
+VALUE wkhtml_topdf_converter_http_error_code(VALUE self);
+VALUE wkhtml_topdf_converter_get_output(VALUE self);
 
 //WkHtml::ToImage

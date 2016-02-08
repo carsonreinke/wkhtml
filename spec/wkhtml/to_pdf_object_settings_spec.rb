@@ -24,4 +24,10 @@ RSpec.describe WkHtml::ToPdf::ObjectSettings do
     settings = WkHtml::ToPdf::ObjectSettings.new()
     expect{ settings['blah'] = '' }.to raise_error(ArgumentError)
   end
+  
+  it "can use a symbol" do
+    settings = WkHtml::ToPdf::ObjectSettings.new()
+    expect(settings[:useExternalLinks] = 'true').to eq('true')
+    expect(settings[:useExternalLinks]).to eq('true')
+  end
 end

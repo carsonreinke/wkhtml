@@ -24,4 +24,10 @@ RSpec.describe WkHtml::ToPdf::GlobalSettings do
     settings = WkHtml::ToPdf::GlobalSettings.new()
     expect{ settings['blah'] = '' }.to raise_error(ArgumentError)
   end
+  
+  it "can use a symbol" do
+    settings = WkHtml::ToPdf::GlobalSettings.new()
+    expect(settings[:useCompression] = 'true').to eq('true')
+    expect(settings[:useCompression]).to eq('true')
+  end
 end
