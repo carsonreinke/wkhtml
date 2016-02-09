@@ -1,6 +1,9 @@
+sudo: false
+addons:
+  apt:
+    packages:
+      - wkhtmltopdf
 language: ruby
-install:
-  - brew install homebrew/boneyard/wkhtmltopdf
 rvm:
   - 1.9.3
   - 2.0
