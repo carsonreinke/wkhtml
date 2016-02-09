@@ -1,6 +1,6 @@
 language: ruby
 install:
-  - gem install wkhtmltoimage-binary
+  - brew install homebrew/boneyard/wkhtmltopdf
 rvm:
   - 1.9.3
   - 2.0
