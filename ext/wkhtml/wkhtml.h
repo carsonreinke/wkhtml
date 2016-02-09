@@ -9,6 +9,8 @@ static VALUE cWkHtmlToPdfGlobalSettings = Qnil;
 static VALUE cWkHtmlToPdfObjectSettings = Qnil;
 static VALUE cWkHtmlToPdfConverter = Qnil;
 static VALUE mWkHtmlToImage = Qnil;
+static VALUE cWkHtmlToImageGlobalSettings = Qnil;
+static VALUE cWkHtmlToImageConverter = Qnil;
 
 void Init_wkhtml();
 
@@ -32,3 +34,14 @@ VALUE wkhtml_topdf_converter_http_error_code(VALUE self);
 VALUE wkhtml_topdf_converter_get_output(VALUE self);
 
 //WkHtml::ToImage
+
+//WkHtml::ToImage::GlobalSettings
+VALUE wkhtml_toimage_globalsettings_alloc(VALUE self);
+VALUE wkhtml_toimage_globalsettings_aset(VALUE self, VALUE key, VALUE val);
+VALUE wkhtml_toimage_globalsettings_aref(VALUE self, VALUE key);
+
+//WkHtml::ToImage::Converter
+VALUE wkhtml_toimage_converter_create(VALUE self, VALUE settings, VALUE data);
+VALUE wkhtml_toimage_converter_convert(VALUE self);
+VALUE wkhtml_toimage_converter_http_error_code(VALUE self);
+VALUE wkhtml_toimage_converter_get_output(VALUE self);

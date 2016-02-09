@@ -45,6 +45,20 @@ void Init_wkhtml() {
   rb_undef_method(rb_singleton_class(cWkHtmlToPdfConverter), "new");
 
   mWkHtmlToImage = rb_define_module_under(mWkHtml, "ToImage");
+
+  cWkHtmlToImageGlobalSettings = rb_define_class_under(mWkHtmlToImage, "GlobalSettings", rb_cObject);
+  rb_define_alloc_func(cWkHtmlToImageGlobalSettings, wkhtml_toimage_globalsettings_alloc);
+  rb_define_method(cWkHtmlToImageGlobalSettings, "[]=", wkhtml_toimage_globalsettings_aset, 2);
+  rb_define_method(cWkHtmlToImageGlobalSettings, "[]", wkhtml_toimage_globalsettings_aref, 1);
+
+  cWkHtmlToImageConverter = rb_define_class_under(mWkHtmlToImage, "Converter", rb_cObject);
+  rb_define_singleton_method(cWkHtmlToImageConverter, "create", wkhtml_toimage_converter_create, 2);
+  rb_define_method(cWkHtmlToImageConverter, "convert", wkhtml_toimage_converter_convert, 0);
+  rb_define_method(cWkHtmlToImageConverter, "http_error_code", wkhtml_toimage_converter_http_error_code, 0);
+  rb_define_method(cWkHtmlToImageConverter, "get_output", wkhtml_toimage_converter_get_output, 0);
+  //Force use of factory method
+  rb_undef_alloc_func(cWkHtmlToImageConverter);
+  rb_undef_method(rb_singleton_class(cWkHtmlToImageConverter), "new");
 }
 
 #define _wkhtml_setting_aset(setting_type, setting_func) ({ \
@@ -133,6 +147,8 @@ VALUE wkhtml_topdf_converter_create(VALUE self, VALUE settings) {
 
   converter = wkhtmltopdf_create_converter(global_settings);
 
+  OBJ_FREEZE(settings);
+
   return Data_Wrap_Struct(self, NULL, wkhtmltopdf_destroy_converter, converter);
 }
 
@@ -213,3 +229,94 @@ VALUE wkhtml_topdf_converter_get_output(VALUE self) {
 //CAPI(void) wkhtmltopdf_set_finished_callback(wkhtmltopdf_converter * converter, wkhtmltopdf_int_callback cb)
 //CAPI(int) wkhtmltopdf_current_phase(wkhtmltopdf_converter * converter)
 //CAPI(int) wkhtmltopdf_phase_count(wkhtmltopdf_converter * converter)
+
+/*
+* WkHtml::ToImage::GlobalSettings
+*/
+VALUE wkhtml_toimage_globalsettings_alloc(VALUE self) {
+  wkhtmltoimage_global_settings* settings = wkhtmltoimage_create_global_settings();
+  return Data_Wrap_Struct(self, NULL, NULL, settings); //TODO
+}
+VALUE wkhtml_toimage_globalsettings_aset(VALUE self, VALUE key, VALUE val) {
+  _wkhtml_setting_aset(wkhtmltoimage_global_settings, wkhtmltoimage_set_global_setting);
+}
+VALUE wkhtml_toimage_globalsettings_aref(VALUE self, VALUE key) {
+  _wkhtml_setting_aref(wkhtmltoimage_global_settings, wkhtmltoimage_get_global_setting);
+}
+
+/*
+* WkHtml::ToImage::Converter
+*/
+VALUE wkhtml_toimage_converter_create(VALUE self, VALUE settings, VALUE data) {
+  wkhtmltoimage_global_settings* global_settings;
+  wkhtmltoimage_converter* converter;
+  VALUE obj;
+  char* data_cstr = NULL;
+
+  if(rb_obj_is_kind_of(settings, cWkHtmlToImageGlobalSettings) == Qfalse) {
+    rb_raise(rb_eArgError, "Wrong argument type, must be a GlobalSettings");
+  }
+  rb_check_frozen(self);
+
+  if(!NIL_P(data)) {
+    Check_Type(data, T_STRING);
+    data_cstr = StringValueCStr(data);
+  }
+
+  Data_Get_Struct(settings, wkhtmltoimage_global_settings, global_settings);
+
+  converter = wkhtmltoimage_create_converter(global_settings, data_cstr);
+
+  OBJ_FREEZE(settings);
+
+  return Data_Wrap_Struct(self, NULL, wkhtmltoimage_destroy_converter, converter);
+}
+
+VALUE wkhtml_toimage_converter_convert(VALUE self) {
+  wkhtmltoimage_converter* converter;
+
+  //Checks
+  rb_check_frozen(self);
+
+  Data_Get_Struct(self, wkhtmltoimage_converter, converter);
+
+  if(wkhtmltoimage_convert(converter)) {
+    //Freeze converter if successful
+    OBJ_FREEZE(self);
+    
+    return Qtrue;
+  }
+  else {
+    return Qfalse;
+  }
+}
+
+VALUE wkhtml_toimage_converter_http_error_code(VALUE self) {
+  wkhtmltoimage_converter* converter;
+
+  Data_Get_Struct(self, wkhtmltoimage_converter, converter);
+
+  return INT2NUM(wkhtmltoimage_http_error_code(converter));
+}
+
+VALUE wkhtml_toimage_converter_get_output(VALUE self) {
+  wkhtmltoimage_converter* converter;
+  const unsigned char* data;
+  long length;
+
+  Data_Get_Struct(self, wkhtmltoimage_converter, converter);
+
+  length = wkhtmltoimage_get_output(converter, &data);
+
+  return rb_str_new((char*)data, length);
+}
+
+//CAPI(void) wkhtmltoimage_set_warning_callback(wkhtmltoimage_converter * converter, wkhtmltoimage_str_callback cb);
+//CAPI(void) wkhtmltoimage_set_error_callback(wkhtmltoimage_converter * converter, wkhtmltoimage_str_callback cb);
+//CAPI(void) wkhtmltoimage_set_phase_changed_callback(wkhtmltoimage_converter * converter, wkhtmltoimage_void_callback cb);
+//CAPI(void) wkhtmltoimage_set_progress_changed_callback(wkhtmltoimage_converter * converter, wkhtmltoimage_int_callback cb);
+//CAPI(void) wkhtmltoimage_set_finished_callback(wkhtmltoimage_converter * converter, wkhtmltoimage_int_callback cb);
+//CAPI(int) wkhtmltoimage_current_phase(wkhtmltoimage_converter * converter);
+//CAPI(int) wkhtmltoimage_phase_count(wkhtmltoimage_converter * converter);
+//CAPI(const char *) wkhtmltoimage_phase_description(wkhtmltoimage_converter * converter, int phase);
+//CAPI(const char *) wkhtmltoimage_progress_string(wkhtmltoimage_converter * converter);

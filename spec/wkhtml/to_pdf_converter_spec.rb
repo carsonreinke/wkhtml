@@ -91,4 +91,24 @@ RSpec.describe WkHtml::ToPdf::Converter do
     converter.convert
     expect(settings.frozen?).to be true
   end
+  
+  it "can get http error code" do
+    converter = WkHtml::ToPdf::Converter.create(WkHtml::ToPdf::GlobalSettings.new())
+    settings = WkHtml::ToPdf::ObjectSettings.new()
+    settings['page'] = 'http://example.com/'
+    converter.add_object(settings, nil)
+    converter.convert()
+    expect(converter.http_error_code).to eq(0)
+  end
+  
+  it "can get output" do
+    converter = WkHtml::ToPdf::Converter.create(WkHtml::ToPdf::GlobalSettings.new())
+    settings = WkHtml::ToPdf::ObjectSettings.new()
+    settings['page'] = 'http://example.com/'
+    converter.add_object(settings, nil)
+    converter.convert()
+    output = converter.get_output()
+    expect(output).to_not be_nil
+    expect(output).to start_with('%PDF-')
+  end
 end
