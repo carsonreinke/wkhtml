@@ -5,9 +5,9 @@ addons:
   apt:
     packages:
       - wkhtmltopdf
-before install:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update          ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install homebrew/boneyard/wkhtmltopdf; fi
+before_install:
+  - brew update
+  - brew install homebrew/boneyard/wkhtmltopdf
 language: ruby
 rvm:
   - 1.9.3
