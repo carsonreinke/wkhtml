@@ -1,18 +1,18 @@
 sudo: false
 os:
-  - osx
-addons:
-  apt:
-    packages:
-      - wkhtmltopdf
+  - linux
+#addons:
+#  apt:
+#    packages:
+#      - wkhtmltopdf
 before_install:
-  - brew update
-  - brew install homebrew/boneyard/wkhtmltopdf
+  - ./.travis_setup.sh
 language: ruby
 rvm:
-  - 1.9.3
-  - 2.0
-  - 2.1
+  #TODO Uncomment once Travis issues resolved
+  #- 1.9.3
+  #- 2.0
+  #- 2.1
   - 2.2
-  #- 2.3
-  - ruby-head
+  #- 2.3.0
+  #- ruby-head
