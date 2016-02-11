@@ -1,4 +1,4 @@
-require 'wkhtml.bundle'
+require 'wkhtml/wkhtml_native'
 require 'wkhtml/version'
 
 module WkHtml

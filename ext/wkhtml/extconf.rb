@@ -31,4 +31,4 @@ if enable_config('use-graphics')
   $defs.push('-DUSE_GRAPHICS')
 end
 
-create_makefile('wkhtml')
+create_makefile('wkhtml/wkhtml_native')
