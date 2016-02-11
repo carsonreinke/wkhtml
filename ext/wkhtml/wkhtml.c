@@ -5,7 +5,7 @@
 #define INT2BOOL(v) ((int)v) ? Qtrue : Qfalse
 #define BOOL2INT(v) ((VALUE)v) ? 1 : 0
 
-void Init_wkhtml() {
+void Init_wkhtml_native() {
   int use_graphics;
   #ifdef USE_GRAPHICS
   use_graphics = 1;
@@ -137,7 +137,6 @@ VALUE wkhtml_topdf_objectsettings_aref(VALUE self, VALUE key) {
 VALUE wkhtml_topdf_converter_create(VALUE self, VALUE settings) {
   wkhtmltopdf_global_settings* global_settings;
   wkhtmltopdf_converter* converter;
-  VALUE obj;
 
   if(rb_obj_is_kind_of(settings, cWkHtmlToPdfGlobalSettings) == Qfalse) {
     rb_raise(rb_eArgError, "Wrong argument type, must be a GlobalSettings");
@@ -250,7 +249,6 @@ VALUE wkhtml_toimage_globalsettings_aref(VALUE self, VALUE key) {
 VALUE wkhtml_toimage_converter_create(VALUE self, VALUE settings, VALUE data) {
   wkhtmltoimage_global_settings* global_settings;
   wkhtmltoimage_converter* converter;
-  VALUE obj;
   char* data_cstr = NULL;
 
   if(rb_obj_is_kind_of(settings, cWkHtmlToImageGlobalSettings) == Qfalse) {
