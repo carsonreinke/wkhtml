@@ -1,9 +1,9 @@
 #!/bin/sh
 
-wget http://download.gna.org/wkhtmltopdf/0.12/0.12.3/wkhtmltox-0.12.3_linux-generic-amd64.tar.xz > /dev/null
-tar xf wkhtmltox-0.12.3_linux-generic-amd64.tar.xz
-echo "wkhtmltopdf: `./wkhtmltox/bin/wkhtmltopdf -V`"
-echo "wkhtmltoimage: `./wkhtmltox/bin/wkhtmltoimage -V`"
+wget -q http://download.gna.org/wkhtmltopdf/0.12/0.12.3/wkhtmltox-0.12.3_linux-generic-amd64.tar.xz -O /tmp/wkhtmltox.tar.xz
+tar -xf /tmp/wkhtmltox.tar.xz -C /tmp
+echo "wkhtmltopdf: `/tmp/wkhtmltox/bin/wkhtmltopdf -V`"
+echo "wkhtmltoimage: `/tmp/wkhtmltox/bin/wkhtmltoimage -V`"
 
-bundle install
-bundle exec rake compile -- --with-wkhtmltox-dir=./wkhtmltox/
+bundle install --jobs=3 --retry=3
+bundle exec rake compile -- --with-wkhtmltox-dir=/tmp/wkhtmltox
