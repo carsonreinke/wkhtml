@@ -2,21 +2,17 @@
 
 #define BUFFER_SIZE 10240
 
+//init functions take parameter use_graphics which can be set using --enable-use-graphics
+#ifdef USE_GRAPHICS
+  #define USE_GRAPHICS_INT 1
+#else
+  #define USE_GRAPHICS_INT 0
+#endif
+
 #define INT2BOOL(v) ((int)v) ? Qtrue : Qfalse
 #define BOOL2INT(v) ((VALUE)v) ? 1 : 0
 
 void Init_wkhtml_native() {
-  int use_graphics;
-  #ifdef USE_GRAPHICS
-  use_graphics = 1;
-  #else
-  use_graphics = 0;
-  #endif
-
-  //Genesis
-  wkhtmltopdf_init(use_graphics); //wkhtmltopdf_deinit will not be called ever
-  wkhtmltoimage_init(use_graphics); //Duplicate, but could change in future
-
   idReady = rb_intern("ready");
 
   mWkHtml = rb_define_module("WkHtml");
@@ -71,7 +67,8 @@ void Init_wkhtml_native() {
   \
   Data_Get_Struct(self, setting_type, settings); \
   \
-  char* key_cstr = StringValueCStr(key); \
+  char* key_cstr; \
+  key_cstr = StringValueCStr(key); \
   if( setting_func(settings, key_cstr, StringValueCStr(val)) ) { \
     return val; \
   } \
@@ -86,10 +83,14 @@ void Init_wkhtml_native() {
   \
   Data_Get_Struct(self, setting_type, settings); \
   \
-  char* key_cstr = StringValueCStr(key); \
-  char* val_cstr = ALLOC_N(char, BUFFER_SIZE); \
-  VALUE val = Qnil; \
-  int result = setting_func(settings, key_cstr, val_cstr, BUFFER_SIZE); \
+  char* key_cstr; \
+  key_cstr = StringValueCStr(key); \
+  char* val_cstr; \
+  val_cstr = ALLOC_N(char, BUFFER_SIZE); \
+  VALUE val; \
+  val = Qnil; \
+  int result; \
+  result = setting_func(settings, key_cstr, val_cstr, BUFFER_SIZE); \
   \
   if(result) { \
     val = rb_str_new_cstr(val_cstr); \
@@ -134,6 +135,13 @@ VALUE wkhtml_topdf_objectsettings_aref(VALUE self, VALUE key) {
 /*
 * WkHtml::ToPdf::Converter
 */
+void wkhtml_topdf_converter_free(wkhtmltopdf_converter* converter) {
+  wkhtmltopdf_destroy_converter(converter);
+
+  //Deinitialize library after destroying (will only if last call)
+  wkhtmltopdf_deinit();
+}
+
 VALUE wkhtml_topdf_converter_create(VALUE self, VALUE settings) {
   wkhtmltopdf_global_settings* global_settings;
   wkhtmltopdf_converter* converter;
@@ -144,11 +152,15 @@ VALUE wkhtml_topdf_converter_create(VALUE self, VALUE settings) {
 
   Data_Get_Struct(settings, wkhtmltopdf_global_settings, global_settings);
 
+  //Initialize library before creating (will only if first call)
+  wkhtmltopdf_init(USE_GRAPHICS_INT);
+
   converter = wkhtmltopdf_create_converter(global_settings);
 
   OBJ_FREEZE(settings);
 
-  return Data_Wrap_Struct(self, NULL, wkhtmltopdf_destroy_converter, converter);
+  //return Data_Wrap_Struct(self, NULL, wkhtmltopdf_destroy_converter, converter);
+  return Data_Wrap_Struct(self, NULL, wkhtml_topdf_converter_free, converter);
 }
 
 VALUE wkhtml_topdf_converter_add_object(VALUE self, VALUE settings, VALUE data) {
@@ -246,6 +258,13 @@ VALUE wkhtml_toimage_globalsettings_aref(VALUE self, VALUE key) {
 /*
 * WkHtml::ToImage::Converter
 */
+void wkhtml_toimage_converter_free(wkhtmltoimage_converter* converter) {
+  wkhtmltoimage_destroy_converter(converter);
+
+  //Deinitialize library after destroying (will only if last call)
+  wkhtmltoimage_deinit();
+}
+
 VALUE wkhtml_toimage_converter_create(VALUE self, VALUE settings, VALUE data) {
   wkhtmltoimage_global_settings* global_settings;
   wkhtmltoimage_converter* converter;
@@ -263,11 +282,14 @@ VALUE wkhtml_toimage_converter_create(VALUE self, VALUE settings, VALUE data) {
 
   Data_Get_Struct(settings, wkhtmltoimage_global_settings, global_settings);
 
+  //Initialize library before creating (will only if first call)
+  wkhtmltoimage_init(USE_GRAPHICS_INT);
   converter = wkhtmltoimage_create_converter(global_settings, data_cstr);
 
   OBJ_FREEZE(settings);
 
-  return Data_Wrap_Struct(self, NULL, wkhtmltoimage_destroy_converter, converter);
+  //return Data_Wrap_Struct(self, NULL, wkhtmltoimage_destroy_converter, converter);
+  return Data_Wrap_Struct(self, NULL, wkhtml_toimage_converter_free, converter);
 }
 
 VALUE wkhtml_toimage_converter_convert(VALUE self) {
@@ -281,7 +303,7 @@ VALUE wkhtml_toimage_converter_convert(VALUE self) {
   if(wkhtmltoimage_convert(converter)) {
     //Freeze converter if successful
     OBJ_FREEZE(self);
-    
+
     return Qtrue;
   }
   else {

@@ -27,6 +27,7 @@ VALUE wkhtml_topdf_objectsettings_aset(VALUE self, VALUE key, VALUE val);
 VALUE wkhtml_topdf_objectsettings_aref(VALUE self, VALUE key);
 
 //WkHtml::ToPdf::Converter
+void wkhtml_topdf_converter_free(wkhtmltopdf_converter* converter);
 VALUE wkhtml_topdf_converter_create(VALUE self, VALUE settings);
 VALUE wkhtml_topdf_converter_add_object(VALUE self, VALUE settings, VALUE data);
 VALUE wkhtml_topdf_converter_convert(VALUE self);
@@ -41,6 +42,7 @@ VALUE wkhtml_toimage_globalsettings_aset(VALUE self, VALUE key, VALUE val);
 VALUE wkhtml_toimage_globalsettings_aref(VALUE self, VALUE key);
 
 //WkHtml::ToImage::Converter
+void wkhtml_toimage_converter_free(wkhtmltoimage_converter* converter);
 VALUE wkhtml_toimage_converter_create(VALUE self, VALUE settings, VALUE data);
 VALUE wkhtml_toimage_converter_convert(VALUE self);
 VALUE wkhtml_toimage_converter_http_error_code(VALUE self);

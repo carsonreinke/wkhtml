@@ -23,6 +23,7 @@ RSpec.describe WkHtml::ToImage::Converter do
       </html>
     HTML
     settings = WkHtml::ToImage::GlobalSettings.new()
+    settings['fmt'] = 'jpeg'
     converter = WkHtml::ToImage::Converter.create(settings, html)
     expect(converter.convert).to be true
   end
@@ -30,6 +31,7 @@ RSpec.describe WkHtml::ToImage::Converter do
   it "can convert external" do
     settings = WkHtml::ToImage::GlobalSettings.new()
     settings['in'] = 'http://example.com/'
+    settings['fmt'] = 'jpeg'
     converter = WkHtml::ToImage::Converter.create(settings, nil)
     expect(converter.convert).to be true
   end
@@ -42,8 +44,10 @@ RSpec.describe WkHtml::ToImage::Converter do
       </body>
       </html>
     HTML
-    converter = WkHtml::ToImage::Converter.create(WkHtml::ToImage::GlobalSettings.new(), html)
-    converter.convert()
+    settings = WkHtml::ToImage::GlobalSettings.new()
+    settings['fmt'] = 'jpeg'
+    converter = WkHtml::ToImage::Converter.create(settings, html)
+    expect(converter.convert).to be true
     expect{converter.convert}.to raise_error(RuntimeError)
   end
   
@@ -64,6 +68,7 @@ RSpec.describe WkHtml::ToImage::Converter do
   it "can get http error code" do
     settings = WkHtml::ToImage::GlobalSettings.new()
     settings['in'] = 'http://example.com/'
+    settings['fmt'] = 'jpeg'
     converter = WkHtml::ToImage::Converter.create(settings, nil)
     converter.convert()
     expect(converter.http_error_code).to eq(0)
@@ -72,10 +77,10 @@ RSpec.describe WkHtml::ToImage::Converter do
   it "can get output" do
     settings = WkHtml::ToImage::GlobalSettings.new()
     settings['in'] = 'http://example.com/'
+    settings['fmt'] = 'jpeg'
     converter = WkHtml::ToImage::Converter.create(settings, nil)
     converter.convert()
     output = converter.get_output()
-    expect(output).to_not be_nil
-    #expect(output).to start_with('%PDF-')
+    expect(output).to start_with("\xFF\xD8\xFF\xE0")
   end
 end
