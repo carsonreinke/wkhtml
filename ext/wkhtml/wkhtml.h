@@ -1,4 +1,5 @@
 #include <ruby.h>
+#include <ruby/encoding.h>
 #include <wkhtmltox/pdf.h>
 #include <wkhtmltox/image.h>
 

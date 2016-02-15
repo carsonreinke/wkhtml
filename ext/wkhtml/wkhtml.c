@@ -11,6 +11,7 @@
 
 #define INT2BOOL(v) ((int)v) ? Qtrue : Qfalse
 #define BOOL2INT(v) ((VALUE)v) ? 1 : 0
+#define ENCODE_UTF8(v) rb_str_encode(v, rb_enc_from_encoding(rb_utf8_encoding()), 0, Qnil)
 
 void Init_wkhtml_native() {
   idReady = rb_intern("ready");
@@ -57,13 +58,14 @@ void Init_wkhtml_native() {
   rb_undef_method(rb_singleton_class(cWkHtmlToImageConverter), "new");
 }
 
+
 #define _wkhtml_setting_aset(setting_type, setting_func) ({ \
   setting_type* settings;\
   \
   rb_check_frozen(self); \
   \
-  key = rb_obj_as_string(key); \
-  val = rb_obj_as_string(val); \
+  key = ENCODE_UTF8(rb_obj_as_string(key)); \
+  val = ENCODE_UTF8(rb_obj_as_string(val)); \
   \
   Data_Get_Struct(self, setting_type, settings); \
   \
@@ -74,10 +76,10 @@ void Init_wkhtml_native() {
   } \
   \
   rb_raise(rb_eArgError, "Unable to set: %s", key_cstr); \
-}) //TODO force UTF-8 encoding
+})
 
 #define _wkhtml_setting_aref(setting_type, setting_func) ({ \
-  key = rb_obj_as_string(key); \
+  key = ENCODE_UTF8(rb_obj_as_string(key)); \
   \
   setting_type* settings; \
   \
@@ -102,7 +104,7 @@ void Init_wkhtml_native() {
   } \
   \
   return val; \
-}) //#TODO force UTF-8
+})
 
 /*
 * WkHtml::ToPdf::GlobalSettings
@@ -223,14 +225,18 @@ VALUE wkhtml_topdf_converter_http_error_code(VALUE self) {
 
 VALUE wkhtml_topdf_converter_get_output(VALUE self) {
   wkhtmltopdf_converter* converter;
-  const unsigned char* data;
+  const unsigned char* data_cstr;
   long length;
+  VALUE data;
 
   Data_Get_Struct(self, wkhtmltopdf_converter, converter);
 
-  length = wkhtmltopdf_get_output(converter, &data);
+  length = wkhtmltopdf_get_output(converter, &data_cstr);
 
-  return rb_str_new((char*)data, length);
+  data = rb_str_new((char*)data_cstr, length);
+  rb_enc_associate(data, rb_ascii8bit_encoding());
+
+  return data;
 }
 
 //CAPI(void) wkhtmltopdf_set_warning_callback(wkhtmltopdf_converter * converter, wkhtmltopdf_str_callback cb)
@@ -246,7 +252,7 @@ VALUE wkhtml_topdf_converter_get_output(VALUE self) {
 */
 VALUE wkhtml_toimage_globalsettings_alloc(VALUE self) {
   wkhtmltoimage_global_settings* settings = wkhtmltoimage_create_global_settings();
-  return Data_Wrap_Struct(self, NULL, NULL, settings); //TODO
+  return Data_Wrap_Struct(self, NULL, NULL, settings); //No free function as wkhtmltopdf claims to manage this
 }
 VALUE wkhtml_toimage_globalsettings_aset(VALUE self, VALUE key, VALUE val) {
   _wkhtml_setting_aset(wkhtmltoimage_global_settings, wkhtmltoimage_set_global_setting);
@@ -321,14 +327,18 @@ VALUE wkhtml_toimage_converter_http_error_code(VALUE self) {
 
 VALUE wkhtml_toimage_converter_get_output(VALUE self) {
   wkhtmltoimage_converter* converter;
-  const unsigned char* data;
+  const unsigned char* data_cstr;
   long length;
+  VALUE data;
 
   Data_Get_Struct(self, wkhtmltoimage_converter, converter);
 
-  length = wkhtmltoimage_get_output(converter, &data);
+  length = wkhtmltoimage_get_output(converter, &data_cstr);
 
-  return rb_str_new((char*)data, length);
+  data = rb_str_new((char*)data_cstr, length);
+  rb_enc_associate(data, rb_ascii8bit_encoding());
+
+  return data;
 }
 
 //CAPI(void) wkhtmltoimage_set_warning_callback(wkhtmltoimage_converter * converter, wkhtmltoimage_str_callback cb);
