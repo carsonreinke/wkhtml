@@ -80,7 +80,7 @@ RSpec.describe WkHtml::ToImage::Converter do
     settings['fmt'] = 'jpeg'
     converter = WkHtml::ToImage::Converter.create(settings, nil)
     converter.convert()
-    output = converter.get_output()
-    expect(output).to start_with("\xFF\xD8\xFF\xE0")
+    output = converter.get_output().encode!(Encoding::BINARY)[0..3]
+    expect(output).to start_with("\xFF\xD8\xFF\xE0".force_encoding(Encoding::BINARY)) #JPEG
   end
 end
