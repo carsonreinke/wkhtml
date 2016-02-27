@@ -1,6 +1,41 @@
 module WkHtml
   module ToPdf
     class GlobalSettings
+      include Settings
+      
+      KEYS = %w(
+        size.paperSize
+        size.width
+        size.height
+        orientation
+        colorMode
+        resolution
+        dpi
+        pageOffset
+        copies
+        collate
+        outline
+        outlineDepth
+        dumpOutline
+        out
+        documentTitle
+        useCompression
+        margin.top
+        margin.bottom
+        margin.left
+        margin.right
+        imageDPI
+        imageQuality
+        load.cookieJar
+      )
+      DEFAULTS = {}
+
+      self.settings = KEYS
+      self.default_settings = DEFAULTS
+
+      def stdout=(v)
+        self.out = v ? CommonSettings::STDOUT : ''
+      end
     end
   end
 end
@@ -30,4 +65,3 @@ margin.right Size of the right margin, e.g. "2cm"
 imageDPI The maximal DPI to use for images in the pdf document.
 imageQuality The jpeg compression factor to use when producing the pdf document, e.g. "92".
 load.cookieJar Path of file used to load and store cookies.
-Pdf object settings

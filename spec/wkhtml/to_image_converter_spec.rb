@@ -71,7 +71,7 @@ RSpec.describe WkHtml::ToImage::Converter do
     settings['fmt'] = 'jpeg'
     converter = WkHtml::ToImage::Converter.create(settings, nil)
     converter.convert()
-    expect(converter.http_error_code).to eq(0)
+    expect(converter.http_error_code).to be_nil
   end
   
   it "can get output" do

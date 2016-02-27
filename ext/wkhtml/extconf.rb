@@ -15,15 +15,15 @@ LIB_DIRS = [
 dir_config('wkhtmltox', HEADER_DIRS, LIB_DIRS)
 
 unless have_library('wkhtmltox')
-  abort('Missing library')
+  abort('Missing wkhtmltox library')
 end
   
 unless have_header('wkhtmltox/pdf.h')
-  abort('Missing pdf.h')
+  abort('Missing wkhtmltox pdf.h')
 end
 
 unless have_header('wkhtmltox/image.h')
-  warn('Missing image.h')
+  warn('Missing wkhtmltox image.h')
 end
 
 #--enable-use-graphics/--disable-use-graphics

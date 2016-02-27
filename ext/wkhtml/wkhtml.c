@@ -18,6 +18,7 @@ void Init_wkhtml_native() {
 
   mWkHtml = rb_define_module("WkHtml");
   rb_define_const(mWkHtml, "LIBRARY_VERSION", rb_obj_freeze(rb_str_new_cstr(wkhtmltopdf_version())));
+  rb_define_const(mWkHtml, "USE_GRAPHICS", INT2BOOL(USE_GRAPHICS_INT));
 
   mWkHtmlToPdf = rb_define_module_under(mWkHtml, "ToPdf");
 
@@ -32,6 +33,11 @@ void Init_wkhtml_native() {
   rb_define_method(cWkHtmlToPdfObjectSettings, "[]", wkhtml_topdf_objectsettings_aref, 1);
 
   cWkHtmlToPdfConverter = rb_define_class_under(mWkHtmlToPdf, "Converter", rb_cObject);
+  /*
+  TODO
+  rb_define_singleton_method(klass, "new", constructor, 1); //Uses Data_Wrap_Struct -> rb_obj_call_init(t_data, 1, argv);
+  rb_define_method(klass, "initialize", initialize, 1);
+  */
   rb_define_singleton_method(cWkHtmlToPdfConverter, "create", wkhtml_topdf_converter_create, 1);
   rb_define_method(cWkHtmlToPdfConverter, "add_object", wkhtml_topdf_converter_add_object, 2);
   rb_define_method(cWkHtmlToPdfConverter, "convert", wkhtml_topdf_converter_convert, 0);
@@ -217,10 +223,12 @@ VALUE wkhtml_topdf_converter_convert(VALUE self) {
 
 VALUE wkhtml_topdf_converter_http_error_code(VALUE self) {
   wkhtmltopdf_converter* converter;
+  int http_error_code;
 
   Data_Get_Struct(self, wkhtmltopdf_converter, converter);
 
-  return INT2NUM(wkhtmltopdf_http_error_code(converter));
+  http_error_code = wkhtmltopdf_http_error_code(converter);
+  return http_error_code == 0 ? Qnil : INT2NUM(http_error_code); //0 is treated as success and should be nil
 }
 
 VALUE wkhtml_topdf_converter_get_output(VALUE self) {
@@ -294,7 +302,6 @@ VALUE wkhtml_toimage_converter_create(VALUE self, VALUE settings, VALUE data) {
 
   OBJ_FREEZE(settings);
 
-  //return Data_Wrap_Struct(self, NULL, wkhtmltoimage_destroy_converter, converter);
   return Data_Wrap_Struct(self, NULL, wkhtml_toimage_converter_free, converter);
 }
 
@@ -319,10 +326,12 @@ VALUE wkhtml_toimage_converter_convert(VALUE self) {
 
 VALUE wkhtml_toimage_converter_http_error_code(VALUE self) {
   wkhtmltoimage_converter* converter;
+  int http_error_code;
 
   Data_Get_Struct(self, wkhtmltoimage_converter, converter);
 
-  return INT2NUM(wkhtmltoimage_http_error_code(converter));
+  http_error_code = wkhtmltoimage_http_error_code(converter);
+  return http_error_code == 0 ? Qnil : INT2NUM(http_error_code); //0 is treated as success and should be nil
 }
 
 VALUE wkhtml_toimage_converter_get_output(VALUE self) {

@@ -98,7 +98,7 @@ RSpec.describe WkHtml::ToPdf::Converter do
     settings['page'] = 'http://example.com/'
     converter.add_object(settings, nil)
     converter.convert()
-    expect(converter.http_error_code).to eq(0)
+    expect(converter.http_error_code).to be_nil
   end
   
   it "can get output" do
