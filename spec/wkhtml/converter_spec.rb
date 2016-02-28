@@ -41,7 +41,7 @@ RSpec.describe WkHtml::Converter do
   describe '#initialize' do
     it 'receives initial options' do
       converter = WkHtml::Converter.new('<html><bod>My Test</body></html>', {'documentTitle' => 'Here Is My Test'})
-      expect(converter.to_pdf()).to include('Here Is My Test')
+      expect(converter.to_pdf().force_encoding(Encoding::BINARY)).to include("/Title (\xFE\xFF\x00H\x00e\x00r\x00e\x00 \x00I\x00s\x00 \x00M\x00y\x00 \x00T\x00e\x00s\x00t)".force_encoding(Encoding::BINARY))
     end
   end
 end
