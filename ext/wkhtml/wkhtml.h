@@ -14,6 +14,7 @@ static VALUE cWkHtmlToImageGlobalSettings = Qnil;
 static VALUE cWkHtmlToImageConverter = Qnil;
 
 void Init_wkhtml();
+void Deinit_wkhtml_native(VALUE data);
 
 //WkHtml::ToPdf
 

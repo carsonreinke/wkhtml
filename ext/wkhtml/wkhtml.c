@@ -14,6 +14,11 @@
 #define ENCODE_UTF8(v) rb_str_encode(v, rb_enc_from_encoding(rb_utf8_encoding()), 0, Qnil)
 
 void Init_wkhtml_native() {
+  //Global initialization of library and when Ruby shuts down
+  wkhtmltopdf_init(USE_GRAPHICS_INT);
+  wkhtmltoimage_init(USE_GRAPHICS_INT);
+  rb_set_end_proc(Deinit_wkhtml_native, Qnil);
+  
   idReady = rb_intern("ready");
 
   mWkHtml = rb_define_module("WkHtml");
@@ -62,6 +67,11 @@ void Init_wkhtml_native() {
   //Force use of factory method
   rb_undef_alloc_func(cWkHtmlToImageConverter);
   rb_undef_method(rb_singleton_class(cWkHtmlToImageConverter), "new");
+}
+
+void Deinit_wkhtml_native(VALUE data) {
+  wkhtmltopdf_deinit();
+  wkhtmltoimage_deinit();
 }
 
 
@@ -146,8 +156,9 @@ VALUE wkhtml_topdf_objectsettings_aref(VALUE self, VALUE key) {
 void wkhtml_topdf_converter_free(wkhtmltopdf_converter* converter) {
   wkhtmltopdf_destroy_converter(converter);
 
-  //Deinitialize library after destroying (will only if last call)
-  wkhtmltopdf_deinit();
+  //Do this on Ruby exit
+  ////Deinitialize library after destroying (will only if last call)
+  //wkhtmltopdf_deinit();
 }
 
 VALUE wkhtml_topdf_converter_create(VALUE self, VALUE settings) {
@@ -160,8 +171,9 @@ VALUE wkhtml_topdf_converter_create(VALUE self, VALUE settings) {
 
   Data_Get_Struct(settings, wkhtmltopdf_global_settings, global_settings);
 
-  //Initialize library before creating (will only if first call)
-  wkhtmltopdf_init(USE_GRAPHICS_INT);
+  //Initialize on library load
+  ////Initialize library before creating (will only if first call)
+  //wkhtmltopdf_init(USE_GRAPHICS_INT);
 
   converter = wkhtmltopdf_create_converter(global_settings);
 
@@ -204,6 +216,12 @@ VALUE wkhtml_topdf_converter_add_object(VALUE self, VALUE settings, VALUE data) 
 VALUE wkhtml_topdf_converter_convert(VALUE self) {
   wkhtmltopdf_converter* converter;
 
+  //TODO QApplication is initialized on whatever thread `wkhtmltopdf_init` is called, otherwise events are
+  //not sent properly
+  if(rb_thread_main() != rb_thread_current()) {
+    rb_raise(rb_eRuntimeError, "Yuck!  You must be on the main thread for wkhtmltopdf to work");
+  }
+
   //Checks
   if(rb_ivar_get(self, idReady) != Qtrue) rb_raise(rb_eRuntimeError, "Object must be added first");
   rb_check_frozen(self);
@@ -211,9 +229,8 @@ VALUE wkhtml_topdf_converter_convert(VALUE self) {
   Data_Get_Struct(self, wkhtmltopdf_converter, converter);
 
   if(wkhtmltopdf_convert(converter)) {
-    //Freeze converter if successful
     OBJ_FREEZE(self);
-    
+
     return Qtrue;
   }
   else {
@@ -275,8 +292,9 @@ VALUE wkhtml_toimage_globalsettings_aref(VALUE self, VALUE key) {
 void wkhtml_toimage_converter_free(wkhtmltoimage_converter* converter) {
   wkhtmltoimage_destroy_converter(converter);
 
-  //Deinitialize library after destroying (will only if last call)
-  wkhtmltoimage_deinit();
+  //Do this on Ruby exit
+  ////Deinitialize library after destroying (will only if last call)
+  //wkhtmltoimage_deinit();
 }
 
 VALUE wkhtml_toimage_converter_create(VALUE self, VALUE settings, VALUE data) {
@@ -296,8 +314,9 @@ VALUE wkhtml_toimage_converter_create(VALUE self, VALUE settings, VALUE data) {
 
   Data_Get_Struct(settings, wkhtmltoimage_global_settings, global_settings);
 
-  //Initialize library before creating (will only if first call)
-  wkhtmltoimage_init(USE_GRAPHICS_INT);
+  //Initialize on library load
+  ////Initialize library before creating (will only if first call)
+  //wkhtmltoimage_init(USE_GRAPHICS_INT);
   converter = wkhtmltoimage_create_converter(global_settings, data_cstr);
 
   OBJ_FREEZE(settings);
@@ -307,6 +326,11 @@ VALUE wkhtml_toimage_converter_create(VALUE self, VALUE settings, VALUE data) {
 
 VALUE wkhtml_toimage_converter_convert(VALUE self) {
   wkhtmltoimage_converter* converter;
+
+  //See wkhtml_topdf_converter_convert
+  if(rb_thread_main() != rb_thread_current()) {
+    rb_raise(rb_eRuntimeError, "Yuck!  You must be on the main thread for wkhtmltopdf to work");
+  }
 
   //Checks
   rb_check_frozen(self);
