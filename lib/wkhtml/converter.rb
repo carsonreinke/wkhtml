@@ -12,7 +12,8 @@ module WkHtml
 
     def initialize(data, options = {})
       @data = data
-      @options = options
+      #Thanks http://stackoverflow.com/questions/800122/best-way-to-convert-strings-to-symbols-in-hash
+      @options = options.inject({}){|memo,(k,v)| memo[k.to_s()] = v; memo} #Force string for easy comparison with allowed settings
       
       #TODO
       @use_data = case @data
@@ -104,8 +105,8 @@ module WkHtml
 
     def build_settings(klass)
       settings = klass.new()
-      (@options.keys & settings.class.settings).each do |key,value|
-        settings[key] = value
+      (@options.keys & settings.class.settings).each do |key|
+        settings[key] = @options[key]
       end
       settings
     end
