@@ -1,16 +1,15 @@
-#0.10.0 first version
-
 require 'mkmf'
 
+#Copied from ruby-filemagic (https://github.com/blackwinter/ruby-filemagic/blob/master/ext/filemagic/extconf.rb)
 HEADER_DIRS = [
   '/opt/local/include', # MacPorts
   '/usr/local/include', # compiled from source and Homebrew
-  '/usr/include',       # system
+  '/usr/include'        # system
 ]
 LIB_DIRS = [
   '/opt/local/lib', # MacPorts
   '/usr/local/lib', # compiled from source and Homebrew
-  '/usr/lib',       # system
+  '/usr/lib'        # system
 ]
 dir_config('wkhtmltox', HEADER_DIRS, LIB_DIRS)
 
