@@ -1,6 +1,8 @@
 require 'spec_helper'
 
 RSpec.describe WkHtml::ToPdf::Converter do
+  let(:html_content) {'<html><bod>My Test</body></html>'}
+  
   it "can create" do
     settings = WkHtml::ToPdf::GlobalSettings.new()
     expect(WkHtml::ToPdf::Converter.create(settings)).not_to be_nil
@@ -25,28 +27,14 @@ RSpec.describe WkHtml::ToPdf::Converter do
   end
   
   it "can add object html" do
-    html = <<-HTML
-      <html>
-      <body>
-        My Test
-      </body>
-      </html>
-    HTML
     converter = WkHtml::ToPdf::Converter.create(WkHtml::ToPdf::GlobalSettings.new())
-    expect(converter.add_object(WkHtml::ToPdf::ObjectSettings.new(), html)).to eq(html)
+    expect(converter.add_object(WkHtml::ToPdf::ObjectSettings.new(), html_content)).to eq(html_content)
   end
   
   it "can convert html" do
-    html = <<-HTML
-      <html>
-      <body>
-        My Test
-      </body>
-      </html>
-    HTML
     settings = WkHtml::ToPdf::GlobalSettings.new()
     converter = WkHtml::ToPdf::Converter.create(settings)
-    converter.add_object(WkHtml::ToPdf::ObjectSettings.new(), html)
+    converter.add_object(WkHtml::ToPdf::ObjectSettings.new(), html_content)
     expect(converter.convert).to be true
   end
   
@@ -64,30 +52,16 @@ RSpec.describe WkHtml::ToPdf::Converter do
   end
   
   it "should not allow multiple converts" do
-    html = <<-HTML
-      <html>
-      <body>
-        My Test
-      </body>
-      </html>
-    HTML
     converter = WkHtml::ToPdf::Converter.create(WkHtml::ToPdf::GlobalSettings.new())
-    converter.add_object(WkHtml::ToPdf::ObjectSettings.new(), html)
+    converter.add_object(WkHtml::ToPdf::ObjectSettings.new(), html_content)
     converter.convert()
     expect{converter.convert}.to raise_error(RuntimeError)
   end
   
   it "should freeze settings after convert" do
-    html = <<-HTML
-      <html>
-      <body>
-        My Test
-      </body>
-      </html>
-    HTML
     settings = WkHtml::ToPdf::ObjectSettings.new()
     converter = WkHtml::ToPdf::Converter.create(WkHtml::ToPdf::GlobalSettings.new())
-    converter.add_object(settings, html)
+    converter.add_object(settings, html_content)
     converter.convert
     expect(settings.frozen?).to be true
   end
@@ -110,5 +84,15 @@ RSpec.describe WkHtml::ToPdf::Converter do
     output = converter.get_output()
     expect(output).to_not be_nil
     expect(output).to start_with('%PDF-')
+  end
+  
+  it "raises when converting on thread" do
+    settings = WkHtml::ToPdf::GlobalSettings.new()
+    converter = WkHtml::ToPdf::Converter.create(settings)
+    converter.add_object(WkHtml::ToPdf::ObjectSettings.new(), html_content)
+    
+    expect do
+      Thread.new{ converter.convert() }.join()
+    end.to raise_error(RuntimeError)
   end
 end

@@ -77,6 +77,7 @@ void Deinit_wkhtml_native(VALUE data) {
 
 #define _wkhtml_setting_aset(setting_type, setting_func) ({ \
   setting_type* settings;\
+  char* key_cstr; \
   \
   rb_check_frozen(self); \
   \
@@ -85,7 +86,6 @@ void Deinit_wkhtml_native(VALUE data) {
   \
   Data_Get_Struct(self, setting_type, settings); \
   \
-  char* key_cstr; \
   key_cstr = StringValueCStr(key); \
   if( setting_func(settings, key_cstr, StringValueCStr(val)) ) { \
     return val; \
@@ -95,19 +95,20 @@ void Deinit_wkhtml_native(VALUE data) {
 })
 
 #define _wkhtml_setting_aref(setting_type, setting_func) ({ \
+  char* key_cstr; \
+  char* val_cstr; \
+  VALUE val; \
+  int result; \
+  \
   key = ENCODE_UTF8(rb_obj_as_string(key)); \
   \
   setting_type* settings; \
   \
   Data_Get_Struct(self, setting_type, settings); \
   \
-  char* key_cstr; \
   key_cstr = StringValueCStr(key); \
-  char* val_cstr; \
   val_cstr = ALLOC_N(char, BUFFER_SIZE); \
-  VALUE val; \
   val = Qnil; \
-  int result; \
   result = setting_func(settings, key_cstr, val_cstr, BUFFER_SIZE); \
   \
   if(result) { \
