@@ -17,7 +17,7 @@ Or install it yourself as:
 
     $ gem install wkhtml
 
-And if it can't find wkhtmltox/wkhtmltopdf, you can supply `--with-wkhtmltox-dir`, `--with-wkhtmltox-include`, `--with-wkhtmltox-lib` for location variations.
+And if it can't find wkhtmltox/wkhtmltopdf, you can supply `--with-wkhtmltox-dir`, `--with-wkhtmltox-include`, or `--with-wkhtmltox-lib` for location variations.
 
 To use a windowing system for rendering, can be enabled with option `--enable-use-graphics`.  For more information, [see `GUIEnabled` portion of Qt QApplication](http://doc.qt.io/qt-4.8/qapplication.html#QApplication-2).
 
@@ -37,6 +37,10 @@ WkHtml::Converter.new('http://example.com/').to_svg()
 The `#new` will take either a url, HTML content, or a `File`.
 
 Secondary argument takes a `Hash` of options, a list of these options can be found [here](http://wkhtmltopdf.org/libwkhtmltox/pagesettings.html).
+
+```ruby
+WkHtml::Converter.new('http://', {:useCompression => false})
+```
 
 ### Todo
 

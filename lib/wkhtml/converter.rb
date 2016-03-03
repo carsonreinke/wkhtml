@@ -106,7 +106,12 @@ module WkHtml
     def build_settings(klass)
       settings = klass.new()
       (@options.keys & settings.class.settings).each do |key|
-        settings[key] = @options[key]
+        local_key = key.tr('.', '_')
+        if settings.class.public_method_defined?(local_key) #Use the instance method instead
+          settings.__send__(:"#{local_key}=", @options[key])
+        else #Does not exist, just go for raw []=
+          settings[key] = @options[key]
+        end
       end
       settings
     end

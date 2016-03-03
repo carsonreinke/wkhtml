@@ -99,10 +99,9 @@ void Deinit_wkhtml_native(VALUE data) {
   char* val_cstr; \
   VALUE val; \
   int result; \
+  setting_type* settings; \
   \
   key = ENCODE_UTF8(rb_obj_as_string(key)); \
-  \
-  setting_type* settings; \
   \
   Data_Get_Struct(self, setting_type, settings); \
   \
