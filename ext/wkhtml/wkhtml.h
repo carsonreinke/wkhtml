@@ -39,6 +39,7 @@ VALUE wkhtml_topdf_converter_get_output(VALUE self);
 //WkHtml::ToImage
 
 //WkHtml::ToImage::GlobalSettings
+void wkhtml_toimage_globalsettings_free(wkhtmltoimage_global_settings* settings);
 VALUE wkhtml_toimage_globalsettings_alloc(VALUE self);
 VALUE wkhtml_toimage_globalsettings_aset(VALUE self, VALUE key, VALUE val);
 VALUE wkhtml_toimage_globalsettings_aref(VALUE self, VALUE key);

@@ -32,6 +32,8 @@ WkHtml::Converter.new('http://example.com/').to_jpg()
 WkHtml::Converter.new('http://example.com/').to_png()
 #SVG
 WkHtml::Converter.new('http://example.com/').to_svg()
+#File
+WkHtml::Converter.new('http://example.com/').to_file('/path', :pdf)
 ```
 
 The `#new` will take either a url, HTML content, or a `File`.

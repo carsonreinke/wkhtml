@@ -33,8 +33,14 @@ module WkHtml
       self.settings = KEYS
       self.default_settings = DEFAULTS
 
+      def out=(v)
+        v = CommonSettings::cleanup_path(v)
+        raise ArgumentError.new("#{v} is not writeable") unless CommonSettings::writable?(v)
+        self['out'] = v
+      end
+
       def stdout=(v)
-        self.out = v ? CommonSettings::STDOUT : ''
+        self.out = v ? CommonSettings::STDOUT : nil
       end
     end
   end

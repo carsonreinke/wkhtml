@@ -24,6 +24,12 @@ module WkHtml
       self.settings = HeaderSettings::KEYS + WebSettings::KEYS + LoadSettings::KEYS + KEYS
       self.default_settings = DEFAULTS
 
+      def page=(v)
+        v = CommonSettings::cleanup_path(v)
+        raise ArgumentError.new("#{v} is missing or not readable") unless CommonSettings::readable?(v)
+        self['page'] = v
+      end
+
       def stdin=(v)
         self.in = v ? CommonSettings::STDIN : ''
       end

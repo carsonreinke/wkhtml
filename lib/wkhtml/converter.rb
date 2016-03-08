@@ -1,3 +1,5 @@
+require 'tempfile'
+
 module WkHtml
   class Converter
     #
@@ -15,12 +17,15 @@ module WkHtml
       #Thanks http://stackoverflow.com/questions/800122/best-way-to-convert-strings-to-symbols-in-hash
       @options = options.inject({}){|memo,(k,v)| memo[k.to_s()] = v; memo} #Force string for easy comparison with allowed settings
       
-      #TODO
+      #Handle multiple inbound types
       @use_data = case @data
       when String
-        !(@data =~ /^http[s]?:\/\//)
-      when File
+        !(@data =~ CommonSettings::REGEXP_URI)
+      when File, Tempfile
         @data = @data.path
+        false
+      when URI
+        @data = @data.to_s()
         false
       else
         false
@@ -31,7 +36,7 @@ module WkHtml
     #
     #
     def to_file(path, format = nil)
-      path = path.path if path.is_a?(File)
+      path = CommonSettings::cleanup_path(path)
 
       unless format
         #Use file extension if available
@@ -40,6 +45,7 @@ module WkHtml
         format = nil if format.empty?()
       end
       format ||= CommonSettings::JPG
+      format = format.to_s()
 
       native_converter = if format == CommonSettings::PDF
         create_pdf_converter do |s|

@@ -275,9 +275,12 @@ VALUE wkhtml_topdf_converter_get_output(VALUE self) {
 /*
 * WkHtml::ToImage::GlobalSettings
 */
+void wkhtml_toimage_globalsettings_free(wkhtmltoimage_global_settings* settings) {
+  //No free function as wkhtmltopdf claims to manage this
+}
 VALUE wkhtml_toimage_globalsettings_alloc(VALUE self) {
   wkhtmltoimage_global_settings* settings = wkhtmltoimage_create_global_settings();
-  return Data_Wrap_Struct(self, NULL, NULL, settings); //No free function as wkhtmltopdf claims to manage this
+  return Data_Wrap_Struct(self, NULL, wkhtml_toimage_globalsettings_free, settings); 
 }
 VALUE wkhtml_toimage_globalsettings_aset(VALUE self, VALUE key, VALUE val) {
   _wkhtml_setting_aset(wkhtmltoimage_global_settings, wkhtmltoimage_set_global_setting);

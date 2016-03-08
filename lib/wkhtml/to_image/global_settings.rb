@@ -24,12 +24,24 @@ module WkHtml
       self.settings = WebSettings::KEYS + LoadSettings::KEYS + KEYS
       self.default_settings = DEFAULTS
 
+      def in=(v)
+        v = CommonSettings::cleanup_path(v)
+        raise ArgumentError.new("#{v} is missing or not readable") unless CommonSettings::readable?(v)
+        self['in'] = v
+      end
+
+      def out=(v)
+        v = CommonSettings::cleanup_path(v)
+        raise ArgumentError.new("#{v} is not writeable") unless CommonSettings::writable?(v)
+        self['out'] = v
+      end
+
       def stdin=(v)
-        self.in = v ? CommonSettings::STDIN : ''
+        self.in = v ? CommonSettings::STDIN : nil
       end
 
       def stdout=(v)
-        self.out = v ? CommonSettings::STDOUT : ''
+        self.out = v ? CommonSettings::STDOUT : nil
       end
     end
   end
