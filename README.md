@@ -1,7 +1,7 @@
 ## WkHtml
 [![Build Status](https://travis-ci.org/carsonreinke/wkhtml.svg?branch=master)](https://travis-ci.org/carsonreinke/wkhtml)
 
-Ruby bindings for [wkhtmltox (wkhtmltopdf)](http://wkhtmltopdf.org/)
+Ruby bindings for [wkhtmltox (wkhtmltopdf)](http://wkhtmltopdf.org/).  This gem should be experimental (see Todo).
 
 ### Installation
 
@@ -36,7 +36,7 @@ WkHtml::Converter.new('http://example.com/').to_svg()
 WkHtml::Converter.new('http://example.com/').to_file('/path', :pdf)
 ```
 
-The `#new` will take either a url, HTML content, or a `File`.
+The `#new` will take either a `URI`, HTML content, or a `File`.
 
 Secondary argument takes a `Hash` of options, a list of these options can be found [here](http://wkhtmltopdf.org/libwkhtmltox/pagesettings.html).
 

@@ -29,6 +29,8 @@ pid = fork do
   end
   $stop_loop = false
   
+  #puts ObjectSpace.count_objects
+  
   puts 'Running tests'
   while !$stop_loop
     if out_file.nil?()
@@ -46,17 +48,26 @@ pid = fork do
     GC.start()
     sleep 0.1
   end
+  
+  #puts ObjectSpace.count_objects
+  
+  Kernel.exit(0)
 end
 
 #Give some time for initial reading
 sleep 10
-old_size = `ps -o rss -p #{pid}`.strip.split.last.to_i * 1024
+old_size = `ps -o rss -p #{pid}`.tap{|o| puts o}.strip.split.last.to_i
 Process.kill('INT', pid)
 
+time.times do |i|
+  new_size = `ps -o rss -p #{pid}`.tap{|o| puts o}.strip.split.last.to_i
+  puts "Difference after #{i} minutes is #{new_size - old_size}"
+  sleep 60
+end
+
 #Take final reading
-sleep 60 * time
 Process.kill('INT', pid)
 sleep 10
-new_size = `ps -o rss -p #{pid}`.strip.split.last.to_i * 1024
+new_size = `ps -o rss -p #{pid}`.strip.split.last.to_i
+puts "Difference after #{time} minutes is #{new_size - old_size}"
 Process.kill('INT', pid)
-puts "Difference after #{time} minutes is #{new_size - old_size} bytes"

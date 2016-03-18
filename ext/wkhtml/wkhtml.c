@@ -18,7 +18,7 @@ void Init_wkhtml_native() {
   wkhtmltopdf_init(USE_GRAPHICS_INT);
   wkhtmltoimage_init(USE_GRAPHICS_INT);
   rb_set_end_proc(Deinit_wkhtml_native, Qnil);
-  
+
   idReady = rb_intern("ready");
 
   mWkHtml = rb_define_module("WkHtml");
@@ -187,7 +187,7 @@ VALUE wkhtml_topdf_converter_add_object(VALUE self, VALUE settings, VALUE data) 
   wkhtmltopdf_converter* converter;
   wkhtmltopdf_object_settings* object_settings;
   char* data_cstr = NULL;
-  
+
   if(rb_obj_is_kind_of(settings, cWkHtmlToPdfObjectSettings) == Qfalse) {
     rb_raise(rb_eArgError, "Wrong argument type, must be a ObjectSettings");
   }
