@@ -1,7 +1,7 @@
 ## WkHtml
 [![Build Status](https://travis-ci.org/carsonreinke/wkhtml.svg?branch=master)](https://travis-ci.org/carsonreinke/wkhtml)
 
-Ruby bindings for [wkhtmltox (wkhtmltopdf)](http://wkhtmltopdf.org/).  This gem should be experimental (see Todo).
+Ruby bindings for [wkhtmltox (wkhtmltopdf)](http://wkhtmltopdf.org/).  This gem should be considered experimental (see Todo).
 
 ### Installation
 
@@ -46,7 +46,6 @@ WkHtml::Converter.new('http://', {:useCompression => false})
 
 ### Todo
 
-* Edge case file paths and nils may cause a seg fault
 * Memory leak with any image conversion :disappointed: ([see](https://github.com/wkhtmltopdf/wkhtmltopdf/issues/2700))
 * Due to wkhtmltopdf C api limitation, seg fault when try to use library from fork :disappointed:
 * Due to wkhtmltopdf C api limitation, must be used within main Ruby VM thread :disappointed:
